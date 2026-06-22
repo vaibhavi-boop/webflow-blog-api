@@ -1,5 +1,7 @@
-export async function GET() {
+export async function GET(_request, { params }) {
   try {
+    const { slug } = await params;
+
     const TOKEN = process.env.WEBFLOW_TOKEN;
     const COLLECTION_ID = process.env.WEBFLOW_BLOG_COLLECTION_ID;
 
@@ -29,7 +31,16 @@ export async function GET() {
       );
     }
 
-    return Response.json(data.items);
+    const blog = data.items.find((item) => item.fieldData?.slug === slug);
+
+    if (!blog) {
+      return Response.json(
+        { error: "Blog not found", receivedSlug: slug },
+        { status: 404 },
+      );
+    }
+
+    return Response.json(blog);
   } catch (error) {
     return Response.json(
       { error: "Something went wrong", message: error.message },
